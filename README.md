@@ -29,6 +29,20 @@ npm run compile
 npm test
 ```
 
+## Deploy to Polygon Amoy (Testnet)
+1. Copy `.env.example` to `.env` and fill in:
+   - `AMOY_RPC_URL`
+   - `PRIVATE_KEY`
+   - `POLYGONSCAN_API_KEY`
+2. Deploy:
+```bash
+npx hardhat run scripts/deploy.js --network amoy
+```
+3. Verify on PolygonScan (to enable the contract UI there):
+```bash
+npx hardhat verify --network amoy <DEPLOYED_ADDRESS>
+```
+
 ## Notes
 - This repo uses Hardhat.
 - ERC20 only (no permit, no ERC777 hooks).
