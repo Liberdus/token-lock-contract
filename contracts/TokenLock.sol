@@ -41,6 +41,14 @@ contract TokenLock {
         return locks[lockId];
     }
 
+    function previewWithdrawable(uint256 lockId) external view returns (uint256) {
+        Lock memory l = locks[lockId];
+        if (l.creator == address(0) || !l.unlocked) {
+            return 0;
+        }
+        return _withdrawable(l);
+    }
+
     function lock(
         address token,
         uint256 amount,

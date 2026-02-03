@@ -118,8 +118,10 @@ describe("TokenLock", function () {
     await lock.lock(tokenAddress, 1000, 0, 1_000_000, ethers.ZeroAddress);
     const now = await time.latest();
     await lock.unlock(0, now + 1);
+    expect(await lock.previewWithdrawable(0)).to.equal(0);
     await time.increaseTo(now + 1 + 1 * DAY);
 
+    expect(await lock.previewWithdrawable(0)).to.equal(1000);
     await expect(lock.withdraw(0, 0, 0, ethers.ZeroAddress))
       .to.emit(lock, "Withdrawn")
       .withArgs(0, creator.address, 1000);
