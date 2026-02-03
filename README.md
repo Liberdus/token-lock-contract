@@ -15,6 +15,7 @@ Simple ERC20 token lock with cliff + daily linear vesting. Intended for Polygon-
 2. `unlock(lockId, unlockTime)`
    - Must be called by the original lock creator.
    - Starts the cliff countdown at `unlockTime`.
+   - `unlockTime` is a Unix timestamp in **seconds**.
 3. `withdraw(lockId, amount, percent, to)`
    - Must be called by the `withdrawAddress` set in `lock()`.
    - Can withdraw by exact `amount` or `percent` (scaled by `RATE_SCALE`).
