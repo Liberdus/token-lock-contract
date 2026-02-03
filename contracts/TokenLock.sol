@@ -22,7 +22,10 @@ contract TokenLock {
     }
 
     uint256 public nextLockId;
+    uint256 public activeLockCount;
     mapping(uint256 => Lock) private locks;
+    uint256[] private activeLockIds;
+    mapping(uint256 => uint256) private activeIndex;
 
     event LockCreated(
         uint256 indexed lockId,
@@ -39,6 +42,23 @@ contract TokenLock {
 
     function getLock(uint256 lockId) external view returns (Lock memory) {
         return locks[lockId];
+    }
+
+    function getActiveLockCount() external view returns (uint256) {
+        return activeLockCount;
+    }
+
+    function getActiveLockIds(uint256 offset, uint256 limit) external view returns (uint256[] memory) {
+        uint256 total = activeLockIds.length;
+        if (offset >= total) return new uint256[](0);
+        uint256 end = offset + limit;
+        if (end > total) end = total;
+        uint256 size = end - offset;
+        uint256[] memory result = new uint256[](size);
+        for (uint256 i = 0; i < size; i++) {
+            result[i] = activeLockIds[offset + i];
+        }
+        return result;
     }
 
     function previewWithdrawable(uint256 lockId) external view returns (uint256) {
@@ -74,6 +94,7 @@ contract TokenLock {
             unlockTime: 0,
             unlocked: false
         });
+        _addActiveLock(lockId);
 
         IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
 
@@ -131,6 +152,7 @@ contract TokenLock {
         emit Withdrawn(lockId, resolvedTo, withdrawnAmount);
 
         if (l.withdrawn >= l.amount) {
+            _removeActiveLock(lockId);
             delete locks[lockId];
         }
     }
@@ -144,6 +166,7 @@ contract TokenLock {
         uint256 amount = l.amount;
         address token = l.token;
         address resolvedTo = to == address(0) ? l.creator : to;
+        _removeActiveLock(lockId);
         delete locks[lockId];
 
         IERC20(token).safeTransfer(resolvedTo, amount);
@@ -168,5 +191,25 @@ contract TokenLock {
             return 0;
         }
         return unlocked - l.withdrawn;
+    }
+
+    function _addActiveLock(uint256 lockId) internal {
+        activeIndex[lockId] = activeLockIds.length;
+        activeLockIds.push(lockId);
+        activeLockCount = activeLockIds.length;
+    }
+
+    function _removeActiveLock(uint256 lockId) internal {
+        if (activeLockIds.length == 0) return;
+        uint256 idx = activeIndex[lockId];
+        uint256 lastIdx = activeLockIds.length - 1;
+        if (idx != lastIdx) {
+            uint256 lastId = activeLockIds[lastIdx];
+            activeLockIds[idx] = lastId;
+            activeIndex[lastId] = idx;
+        }
+        activeLockIds.pop();
+        delete activeIndex[lockId];
+        activeLockCount = activeLockIds.length;
     }
 }

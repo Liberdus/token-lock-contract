@@ -207,6 +207,28 @@ describe("TokenLock", function () {
       .withArgs(0, withdrawer.address, 500);
   });
 
+  it("tracks active lock ids", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator } = await deploy();
+    await token.mint(creator.address, 2000);
+    await token.approve(lockAddress, 2000);
+
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+
+    const count = await lock.getActiveLockCount();
+    expect(count).to.equal(2);
+
+    const ids = await lock.getActiveLockIds(0, 10);
+    expect(ids.map((v) => Number(v))).to.have.members([0, 1]);
+
+    await lock.retract(0, creator.address);
+
+    const countAfter = await lock.getActiveLockCount();
+    expect(countAfter).to.equal(1);
+    const idsAfter = await lock.getActiveLockIds(0, 10);
+    expect(idsAfter.map((v) => Number(v))).to.have.members([1]);
+  });
+
   it("retracts only before any withdrawal", async function () {
     const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
     await token.mint(creator.address, 1000);
