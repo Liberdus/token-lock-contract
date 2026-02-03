@@ -92,6 +92,27 @@ describe("TokenLock", function () {
       .to.be.revertedWith("cliff active");
   });
 
+  it("honors non-zero cliff with delayed vesting start", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+
+    const rate = 200_000; // 20% per day
+    await lock.lock(tokenAddress, 1000, 3, rate, withdrawer.address);
+
+    const now = await time.latest();
+    await lock.unlock(0, now + 1);
+
+    await time.increaseTo(now + 1 + 2 * DAY);
+    expect(await lock.previewWithdrawable(0)).to.equal(0);
+
+    await time.increaseTo(now + 1 + 3 * DAY);
+    expect(await lock.previewWithdrawable(0)).to.equal(0);
+
+    await time.increaseTo(now + 1 + 4 * DAY);
+    expect(await lock.previewWithdrawable(0)).to.equal(200);
+  });
+
   it("enforces withdraw address and amount/percent rules", async function () {
     const { token, lock, tokenAddress, lockAddress, creator, withdrawer, other } = await deploy();
     await token.mint(creator.address, 1000);
