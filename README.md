@@ -43,6 +43,18 @@ npx hardhat run scripts/deploy.js --network amoy
 npx hardhat verify --network amoy <DEPLOYED_ADDRESS>
 ```
 
+## Mock ERC20 (Test Token)
+Deploy a mock token to Amoy for local testing against the lock contract:
+```bash
+npx hardhat run scripts/deploy-mock.js --network amoy
+```
+
+Mint to a wallet (example: 1,000,000 tokens):
+```bash
+MOCK_TOKEN=0xYourMockToken MINT_TO=0xYourWallet MINT_AMOUNT=1000000 \\
+  npx hardhat run scripts/mint-mock.js --network amoy
+```
+
 ## Notes
 - This repo uses Hardhat.
 - ERC20 only (no permit, no ERC777 hooks).
