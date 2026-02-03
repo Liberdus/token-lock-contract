@@ -2,12 +2,10 @@ const hre = require("hardhat");
 
 async function main() {
   const [caller] = await hre.ethers.getSigners();
-  const tokenAddress = process.env.MOCK_TOKEN;
-  const to = process.env.MINT_TO;
-  const amount = process.env.MINT_AMOUNT || "1000000"; // whole tokens
+  const [tokenAddress, to, amount = "1000000"] = process.argv.slice(2);
 
   if (!tokenAddress || !to) {
-    throw new Error("Set MOCK_TOKEN and MINT_TO in env");
+    throw new Error("Usage: mint-mock.js <tokenAddress> <to> [amount]");
   }
 
   const token = await hre.ethers.getContractAt("MockERC20", tokenAddress);

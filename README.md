@@ -51,8 +51,8 @@ npx hardhat run scripts/deploy-mock.js --network amoy
 
 Mint to a wallet (example: 1,000,000 tokens):
 ```bash
-MOCK_TOKEN=0xYourMockToken MINT_TO=0xYourWallet MINT_AMOUNT=1000000 \\
-  npx hardhat run scripts/mint-mock.js --network amoy
+npx hardhat run scripts/mint-mock.js --network amoy -- \\
+  0xYourMockToken 0xYourWallet 1000000
 ```
 
 ## Notes
