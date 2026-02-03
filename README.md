@@ -55,6 +55,11 @@ npx hardhat run scripts/mint-mock.js --network amoy -- \\
   0xYourMockToken 0xYourWallet 1000000
 ```
 
+Or via task:
+```bash
+npx hardhat mint-mock --network amoy --token 0xYourMockToken --to 0xYourWallet --amount 1000000
+```
+
 ## Notes
 - This repo uses Hardhat.
 - ERC20 only (no permit, no ERC777 hooks).
