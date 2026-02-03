@@ -7,7 +7,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 contract TokenLock {
     using SafeERC20 for IERC20;
 
-    uint256 public constant RATE_SCALE = 1_000_000; // 100% = 1_000_000
+    uint256 public constant RATE_SCALE = 1_000_000_000_000; // 100% = 1e12
 
     struct Lock {
         address creator;

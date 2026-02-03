@@ -3,9 +3,9 @@
 Simple ERC20 token lock with cliff + daily linear vesting. Intended for Polygon-compatible deployment.
 
 ## Key Concepts
-- `ratePerDay` is a **percentage-per-day** scaled by `RATE_SCALE = 1_000_000`.
-  - `1_000_000` = 100% per day
-  - Example: 2 years (730 days) => `ratePerDay = 1_000_000 / 730`.
+- `ratePerDay` is a **percentage-per-day** scaled by `RATE_SCALE = 1_000_000_000_000`.
+  - `1_000_000_000_000` = 100% per day
+  - Example: 2 years (730 days) => `ratePerDay = 1_000_000_000_000 / 730`.
 - Vesting starts only after `unlock()` is called and the cliff period has elapsed.
 
 ## Contract Flow
