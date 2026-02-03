@@ -49,6 +49,13 @@ Deploy a mock token to Amoy for local testing against the lock contract:
 npx hardhat run scripts/deploy-mock.js --network amoy
 ```
 
+Approve the TokenLock contract to move your tokens before calling `lock`:
+```bash
+# TokenLock address (Amoy): 0x324d9b90A07D587B4FA0D68c22645B9c8D321079
+# Approve 1,000 tokens (18 decimals)
+approve(spender=0x324d9b90A07D587B4FA0D68c22645B9c8D321079, amount=1000000000000000000000)
+```
+
 Mint to a wallet (example: 1,000,000 tokens):
 ```bash
 npx hardhat run scripts/mint-mock.js --network amoy -- \\
@@ -58,6 +65,11 @@ npx hardhat run scripts/mint-mock.js --network amoy -- \\
 Or via task:
 ```bash
 npx hardhat mint-mock --network amoy --token 0xYourMockToken --to 0xYourWallet --amount 1000000
+```
+
+Approve via task:
+```bash
+npx hardhat approve-mock --network amoy --token 0xYourMockToken --spender 0x324d9b90A07D587B4FA0D68c22645B9c8D321079 --amount 1000
 ```
 
 ## Notes
