@@ -45,6 +45,104 @@ describe("TokenLock", function () {
       .to.be.revertedWith("not creator");
   });
 
+  it("rejects invalid lock parameters", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+
+    await expect(lock.lock(ethers.ZeroAddress, 1000, 0, 1_000_000, creator.address))
+      .to.be.revertedWith("token zero");
+    await expect(lock.lock(tokenAddress, 0, 0, 1_000_000, creator.address))
+      .to.be.revertedWith("amount zero");
+    await expect(lock.lock(tokenAddress, 1000, 0, 0, creator.address))
+      .to.be.revertedWith("rate invalid");
+    await expect(lock.lock(tokenAddress, 1000, 0, 1_000_001, creator.address))
+      .to.be.revertedWith("rate invalid");
+  });
+
+  it("prevents unlock in the past and double unlock", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000, creator.address);
+
+    const now = await time.latest();
+    await expect(lock.unlock(0, now - 1))
+      .to.be.revertedWith("unlock in past");
+
+    await lock.unlock(0, now + 10);
+    await expect(lock.unlock(0, now + 20))
+      .to.be.revertedWith("already unlocked");
+  });
+
+  it("blocks withdrawal before unlock or cliff end", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+    await lock.lock(tokenAddress, 1000, 2, 1_000_000, withdrawer.address);
+
+    await expect(lock.connect(withdrawer).withdraw(0, 0, 0, withdrawer.address))
+      .to.be.revertedWith("not unlocked");
+
+    const now = await time.latest();
+    await lock.unlock(0, now + 1);
+
+    await time.increaseTo(now + 1 + 1 * DAY);
+    await expect(lock.connect(withdrawer).withdraw(0, 0, 0, withdrawer.address))
+      .to.be.revertedWith("cliff active");
+  });
+
+  it("enforces withdraw address and amount/percent rules", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator, withdrawer, other } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000, withdrawer.address);
+
+    const now = await time.latest();
+    await lock.unlock(0, now + 1);
+    await time.increaseTo(now + 1 + 1 * DAY);
+
+    await expect(lock.connect(other).withdraw(0, 0, 0, other.address))
+      .to.be.revertedWith("not withdraw address");
+    await expect(lock.connect(withdrawer).withdraw(0, 1, 1, withdrawer.address))
+      .to.be.revertedWith("amount and percent");
+    await expect(lock.connect(withdrawer).withdraw(0, 0, 1_000_001, withdrawer.address))
+      .to.be.revertedWith("percent invalid");
+  });
+
+  it("defaults withdraw address to creator and deletes lock after full withdraw", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000, ethers.ZeroAddress);
+    const now = await time.latest();
+    await lock.unlock(0, now + 1);
+    await time.increaseTo(now + 1 + 1 * DAY);
+
+    await expect(lock.withdraw(0, 0, 0, ethers.ZeroAddress))
+      .to.emit(lock, "Withdrawn")
+      .withArgs(0, creator.address, 1000);
+
+    const l = await lock.getLock(0);
+    expect(l.creator).to.equal(ethers.ZeroAddress);
+  });
+
+  it("retract fails after any withdrawal", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000, withdrawer.address);
+
+    const now = await time.latest();
+    await lock.unlock(0, now + 1);
+    await time.increaseTo(now + 1 + 1 * DAY);
+    await lock.connect(withdrawer).withdraw(0, 500, 0, withdrawer.address);
+
+    await expect(lock.retract(0, creator.address))
+      .to.be.revertedWith("already withdrawn");
+  });
+
   it("withdraws after cliff with daily vesting", async function () {
     const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
     await token.mint(creator.address, 1000);
