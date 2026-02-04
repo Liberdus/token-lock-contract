@@ -20,8 +20,17 @@ Simple ERC20 token lock with cliff + daily linear vesting. Intended for Polygon-
    - Must be called by the `withdrawAddress` set in `lock()`.
    - Can withdraw by exact `amount` or `percent` (scaled by `RATE_SCALE`).
    - If both `amount` and `percent` are zero, defaults to 100% of available.
+   - When fully withdrawn, emits `LockClosed` with `reason = 0` and deletes the lock.
 4. `retract(lockId, to)`
    - Creator-only, only allowed if **no withdrawals have occurred**.
+   - Emits `LockClosed` with `reason = 1` and deletes the lock.
+
+## Events
+- `LockCreated` — new lock created.
+- `Unlocked` — unlock time set.
+- `Withdrawn` — withdrawal executed.
+- `Retracted` — retraction executed.
+- `LockClosed` — final snapshot emitted on full withdraw or retract.
 
 ## Local Dev
 ```bash
