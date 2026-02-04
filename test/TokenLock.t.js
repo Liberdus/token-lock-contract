@@ -307,7 +307,20 @@ describe("TokenLock", function () {
 
     await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address);
 
-    await expect(lock.retract(0, creator.address))
+    const tx = await lock.retract(0, creator.address);
+    const receipt = await tx.wait();
+    const closed = receipt.logs
+      .map((l) => {
+        try { return lock.interface.parseLog(l); } catch { return null; }
+      })
+      .filter(Boolean)
+      .find((e) => e.name === "LockClosed");
+    expect(closed.args.reason).to.equal(1);
+    expect(closed.args.creator).to.equal(creator.address);
+    expect(closed.args.token).to.equal(tokenAddress);
+    expect(closed.args.amount).to.equal(1000);
+
+    await expect(tx)
       .to.emit(lock, "Retracted")
       .withArgs(0, creator.address, 1000)
       .to.emit(lock, "LockClosed");
