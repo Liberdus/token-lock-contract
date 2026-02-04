@@ -219,7 +219,17 @@ describe("TokenLock", function () {
     await lock.unlock(0, now + 1);
     await time.increaseTo(now + 1 + 1 * DAY);
 
-    await expect(lock.connect(withdrawer).withdraw(0, 0, 0, withdrawer.address))
+    const tx = await lock.connect(withdrawer).withdraw(0, 0, 0, withdrawer.address);
+    const receipt = await tx.wait();
+    const parsed = receipt.logs
+      .map((l) => {
+        try { return lock.interface.parseLog(l); } catch { return null; }
+      })
+      .filter(Boolean)
+      .find((e) => e.name === "LockClosed");
+    expect(parsed.args.reason).to.equal(0);
+
+    await expect(tx)
       .to.emit(lock, "Withdrawn")
       .withArgs(0, withdrawer.address, 1000)
       .to.emit(lock, "LockClosed");
@@ -245,6 +255,49 @@ describe("TokenLock", function () {
     expect(countAfter).to.equal(1);
     const idsAfter = await lock.getActiveLockIds(0, 10);
     expect(idsAfter.map((v) => Number(v))).to.have.members([1]);
+  });
+
+  it("removes active lock on full withdraw", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address);
+
+    const now = await time.latest();
+    await lock.unlock(0, now + 1);
+    await time.increaseTo(now + 1 + 1 * DAY);
+    await lock.connect(withdrawer).withdraw(0, 0, 0, withdrawer.address);
+
+    const count = await lock.getActiveLockCount();
+    expect(count).to.equal(0);
+    const ids = await lock.getActiveLockIds(0, 10);
+    expect(ids.length).to.equal(0);
+  });
+
+  it("paginates active lock ids", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator } = await deploy();
+    await token.mint(creator.address, 3000);
+    await token.approve(lockAddress, 3000);
+
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+
+    const page = await lock.getActiveLockIds(1, 1);
+    expect(page.map((v) => Number(v))).to.have.members([1]);
+  });
+
+  it("zeroes lock after retract", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+    await lock.retract(0, creator.address);
+
+    const l = await lock.getLock(0);
+    expect(l.creator).to.equal(ethers.ZeroAddress);
   });
 
   it("retracts only before any withdrawal", async function () {
