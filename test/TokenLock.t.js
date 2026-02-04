@@ -207,6 +207,24 @@ describe("TokenLock", function () {
       .withArgs(0, withdrawer.address, 500);
   });
 
+  it("emits LockClosed on full withdrawal", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+
+    const rate = 1_000_000_000_000; // 100% per day
+    await lock.lock(tokenAddress, 1000, 0, rate, withdrawer.address);
+
+    const now = await time.latest();
+    await lock.unlock(0, now + 1);
+    await time.increaseTo(now + 1 + 1 * DAY);
+
+    await expect(lock.connect(withdrawer).withdraw(0, 0, 0, withdrawer.address))
+      .to.emit(lock, "Withdrawn")
+      .withArgs(0, withdrawer.address, 1000)
+      .to.emit(lock, "LockClosed");
+  });
+
   it("tracks active lock ids", async function () {
     const { token, lock, tokenAddress, lockAddress, creator } = await deploy();
     await token.mint(creator.address, 2000);
@@ -238,6 +256,7 @@ describe("TokenLock", function () {
 
     await expect(lock.retract(0, creator.address))
       .to.emit(lock, "Retracted")
-      .withArgs(0, creator.address, 1000);
+      .withArgs(0, creator.address, 1000)
+      .to.emit(lock, "LockClosed");
   });
 });

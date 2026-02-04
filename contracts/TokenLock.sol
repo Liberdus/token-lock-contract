@@ -7,6 +7,8 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 contract TokenLock {
     using SafeERC20 for IERC20;
 
+    uint8 public constant CLOSE_REASON_WITHDRAWN = 0;
+    uint8 public constant CLOSE_REASON_RETRACTED = 1;
     uint256 public constant RATE_SCALE = 1_000_000_000_000; // 100% = 1e12
 
     struct Lock {
@@ -39,6 +41,19 @@ contract TokenLock {
     event Unlocked(uint256 indexed lockId, uint256 unlockTime);
     event Withdrawn(uint256 indexed lockId, address indexed to, uint256 amount);
     event Retracted(uint256 indexed lockId, address indexed to, uint256 amount);
+    event LockClosed(
+        uint256 indexed lockId,
+        uint8 reason,
+        address creator,
+        address token,
+        address withdrawAddress,
+        uint256 amount,
+        uint256 withdrawn,
+        uint256 cliffDays,
+        uint256 ratePerDay,
+        uint256 unlockTime,
+        bool unlocked
+    );
 
     function getLock(uint256 lockId) external view returns (Lock memory) {
         return locks[lockId];
@@ -152,6 +167,19 @@ contract TokenLock {
         emit Withdrawn(lockId, resolvedTo, withdrawnAmount);
 
         if (l.withdrawn >= l.amount) {
+            emit LockClosed(
+                lockId,
+                CLOSE_REASON_WITHDRAWN,
+                l.creator,
+                l.token,
+                l.withdrawAddress,
+                l.amount,
+                l.withdrawn,
+                l.cliffDays,
+                l.ratePerDay,
+                l.unlockTime,
+                l.unlocked
+            );
             _removeActiveLock(lockId);
             delete locks[lockId];
         }
@@ -166,6 +194,19 @@ contract TokenLock {
         uint256 amount = l.amount;
         address token = l.token;
         address resolvedTo = to == address(0) ? l.creator : to;
+        emit LockClosed(
+            lockId,
+            CLOSE_REASON_RETRACTED,
+            l.creator,
+            l.token,
+            l.withdrawAddress,
+            l.amount,
+            l.withdrawn,
+            l.cliffDays,
+            l.ratePerDay,
+            l.unlockTime,
+            l.unlocked
+        );
         _removeActiveLock(lockId);
         delete locks[lockId];
 
