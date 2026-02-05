@@ -21,6 +21,9 @@ contract TokenLock {
         uint256 ratePerDay;
         uint256 unlockTime;
         bool unlocked;
+        // If true: creator may retract only until the lock has been unlocked.
+        // If false: creator may retract until the first withdrawal (legacy behavior).
+        bool retractUntilUnlock;
     }
 
     uint256 public nextLockId;
@@ -89,7 +92,8 @@ contract TokenLock {
         uint256 amount,
         uint256 cliffDays,
         uint256 ratePerDay,
-        address withdrawAddress
+        address withdrawAddress,
+        bool retractUntilUnlock
     ) external returns (uint256 lockId) {
         require(token != address(0), "token zero");
         require(amount > 0, "amount zero");
@@ -107,7 +111,8 @@ contract TokenLock {
             cliffDays: cliffDays,
             ratePerDay: ratePerDay,
             unlockTime: 0,
-            unlocked: false
+            unlocked: false,
+            retractUntilUnlock: retractUntilUnlock
         });
         _addActiveLock(lockId);
 
@@ -189,7 +194,11 @@ contract TokenLock {
         Lock storage l = locks[lockId];
         require(l.creator != address(0), "lock missing");
         require(msg.sender == l.creator, "not creator");
-        require(l.withdrawn == 0, "already withdrawn");
+        if (l.retractUntilUnlock) {
+            require(!l.unlocked, "already unlocked");
+        } else {
+            require(l.withdrawn == 0, "already withdrawn");
+        }
 
         uint256 amount = l.amount;
         address token = l.token;
