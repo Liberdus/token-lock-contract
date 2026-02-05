@@ -95,17 +95,6 @@ contract TokenLock {
         address withdrawAddress,
         bool retractUntilUnlock
     ) external returns (uint256 lockId) {
-        return _lock(token, amount, cliffDays, ratePerDay, withdrawAddress, retractUntilUnlock);
-    }
-
-    function _lock(
-        address token,
-        uint256 amount,
-        uint256 cliffDays,
-        uint256 ratePerDay,
-        address withdrawAddress,
-        bool retractUntilUnlock
-    ) internal returns (uint256 lockId) {
         require(token != address(0), "token zero");
         require(amount > 0, "amount zero");
         require(ratePerDay > 0 && ratePerDay <= RATE_SCALE, "rate invalid");
