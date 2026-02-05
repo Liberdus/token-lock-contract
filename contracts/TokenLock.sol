@@ -92,16 +92,6 @@ contract TokenLock {
         uint256 amount,
         uint256 cliffDays,
         uint256 ratePerDay,
-        address withdrawAddress
-    ) external returns (uint256 lockId) {
-        return _lock(token, amount, cliffDays, ratePerDay, withdrawAddress, false);
-    }
-
-    function lockWithRetractPolicy(
-        address token,
-        uint256 amount,
-        uint256 cliffDays,
-        uint256 ratePerDay,
         address withdrawAddress,
         bool retractUntilUnlock
     ) external returns (uint256 lockId) {

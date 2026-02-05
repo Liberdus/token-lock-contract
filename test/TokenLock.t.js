@@ -25,7 +25,7 @@ describe("TokenLock", function () {
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
 
-    await expect(lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address))
+    await expect(lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, false))
       .to.emit(lock, "LockCreated")
       .withArgs(0, creator.address, tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address);
 
@@ -39,7 +39,7 @@ describe("TokenLock", function () {
     const { token, lock, tokenAddress, lockAddress, creator, withdrawer, other } = await deploy();
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, false);
 
     const now = await time.latest();
     await expect(lock.connect(other).unlock(0, now + 1))
@@ -51,13 +51,13 @@ describe("TokenLock", function () {
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
 
-    await expect(lock.lock(ethers.ZeroAddress, 1000, 0, 1_000_000_000_000, creator.address))
+    await expect(lock.lock(ethers.ZeroAddress, 1000, 0, 1_000_000_000_000, creator.address, false))
       .to.be.revertedWith("token zero");
-    await expect(lock.lock(tokenAddress, 0, 0, 1_000_000_000_000, creator.address))
+    await expect(lock.lock(tokenAddress, 0, 0, 1_000_000_000_000, creator.address, false))
       .to.be.revertedWith("amount zero");
-    await expect(lock.lock(tokenAddress, 1000, 0, 0, creator.address))
+    await expect(lock.lock(tokenAddress, 1000, 0, 0, creator.address, false))
       .to.be.revertedWith("rate invalid");
-    await expect(lock.lock(tokenAddress, 1000, 0, 1_000_000_000_001, creator.address))
+    await expect(lock.lock(tokenAddress, 1000, 0, 1_000_000_000_001, creator.address, false))
       .to.be.revertedWith("rate invalid");
   });
 
@@ -65,7 +65,7 @@ describe("TokenLock", function () {
     const { token, lock, tokenAddress, lockAddress, creator } = await deploy();
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address, false);
 
     const now = await time.latest();
     await expect(lock.unlock(0, now - 1))
@@ -80,7 +80,7 @@ describe("TokenLock", function () {
     const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
-    await lock.lock(tokenAddress, 1000, 2, 1_000_000_000_000, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 2, 1_000_000_000_000, withdrawer.address, false);
 
     await expect(lock.connect(withdrawer).withdraw(0, 0, 0, withdrawer.address))
       .to.be.revertedWith("not unlocked");
@@ -99,7 +99,7 @@ describe("TokenLock", function () {
     await token.approve(lockAddress, 1000);
 
     const rate = 200_000_000_000; // 20% per day
-    await lock.lock(tokenAddress, 1000, 3, rate, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 3, rate, withdrawer.address, false);
 
     const now = await time.latest();
     await lock.unlock(0, now + 1);
@@ -118,7 +118,7 @@ describe("TokenLock", function () {
     const { token, lock, tokenAddress, lockAddress, creator, withdrawer, other } = await deploy();
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, false);
 
     const now = await time.latest();
     await lock.unlock(0, now + 1);
@@ -137,7 +137,7 @@ describe("TokenLock", function () {
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
 
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, ethers.ZeroAddress);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, ethers.ZeroAddress, false);
     const now = await time.latest();
     await lock.unlock(0, now + 1);
     expect(await lock.previewWithdrawable(0)).to.equal(0);
@@ -156,7 +156,7 @@ describe("TokenLock", function () {
     const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, false);
 
     const now = await time.latest();
     await lock.unlock(0, now + 1);
@@ -173,7 +173,7 @@ describe("TokenLock", function () {
     await token.approve(lockAddress, 1000);
 
     // retractUntilUnlock = true
-    await lock.lockWithRetractPolicy(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, true);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, true);
 
     // Before unlock, retract is allowed.
     await expect(lock.retract(0, creator.address))
@@ -183,7 +183,7 @@ describe("TokenLock", function () {
     // New lock: once unlocked, retract must fail even if no withdrawals happened.
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
-    await lock.lockWithRetractPolicy(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, true);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, true);
 
     const now = await time.latest();
     await lock.unlock(1, now + 1);
@@ -197,7 +197,7 @@ describe("TokenLock", function () {
     await token.approve(lockAddress, 1000);
 
     const rate = 100_000_000_000; // 10% per day
-    await lock.lock(tokenAddress, 1000, 0, rate, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 0, rate, withdrawer.address, false);
 
     const now = await time.latest();
     await lock.unlock(0, now + 1);
@@ -221,7 +221,7 @@ describe("TokenLock", function () {
     await token.approve(lockAddress, 1000);
 
     const rate = 1_000_000_000_000; // 100% per day
-    await lock.lock(tokenAddress, 1000, 0, rate, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 0, rate, withdrawer.address, false);
 
     const now = await time.latest();
     await lock.unlock(0, now + 1);
@@ -238,7 +238,7 @@ describe("TokenLock", function () {
     await token.approve(lockAddress, 1000);
 
     const rate = 1_000_000_000_000; // 100% per day
-    await lock.lock(tokenAddress, 1000, 0, rate, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 0, rate, withdrawer.address, false);
 
     const now = await time.latest();
     await lock.unlock(0, now + 1);
@@ -265,8 +265,8 @@ describe("TokenLock", function () {
     await token.mint(creator.address, 2000);
     await token.approve(lockAddress, 2000);
 
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address, false);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address, false);
 
     const count = await lock.getActiveLockCount();
     expect(count).to.equal(2);
@@ -287,7 +287,7 @@ describe("TokenLock", function () {
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
 
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, false);
 
     const now = await time.latest();
     await lock.unlock(0, now + 1);
@@ -305,9 +305,9 @@ describe("TokenLock", function () {
     await token.mint(creator.address, 3000);
     await token.approve(lockAddress, 3000);
 
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address, false);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address, false);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address, false);
 
     const page = await lock.getActiveLockIds(1, 1);
     expect(page.map((v) => Number(v))).to.have.members([1]);
@@ -318,7 +318,7 @@ describe("TokenLock", function () {
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
 
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address, false);
     await lock.retract(0, creator.address);
 
     const l = await lock.getLock(0);
@@ -330,7 +330,7 @@ describe("TokenLock", function () {
     await token.mint(creator.address, 1000);
     await token.approve(lockAddress, 1000);
 
-    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address);
+    await lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, false);
 
     const tx = await lock.retract(0, creator.address);
     const receipt = await tx.wait();

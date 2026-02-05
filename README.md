@@ -12,8 +12,7 @@ Simple ERC20 token lock with cliff + daily linear vesting. Intended for Polygon-
 1. `lock(...)`
    - Transfers tokens into the contract.
    - Assigns a `lockId` and emits `LockCreated`.
-   - Default retraction behavior is "until first withdraw" (legacy behavior).
-   - Optional: call `lockWithRetractPolicy(..., retractUntilUnlock)` to control the retraction window:
+   - `retractUntilUnlock` controls the retraction window:
      - `retractUntilUnlock = true`: creator may retract only until `unlock()` is called.
      - `retractUntilUnlock = false`: creator may retract until the first withdrawal.
 2. `unlock(lockId, unlockTime)`
