@@ -32,6 +32,7 @@ describe("TokenLock", function () {
     const l = await lock.getLock(0);
     expect(l.amount).to.equal(1000);
     expect(l.withdrawAddress).to.equal(withdrawer.address);
+    expect(l.retractUntilUnlock).to.equal(false);
   });
 
   it("only creator can unlock", async function () {
@@ -164,6 +165,30 @@ describe("TokenLock", function () {
 
     await expect(lock.retract(0, creator.address))
       .to.be.revertedWith("already withdrawn");
+  });
+
+  it("supports retract-until-unlock policy", async function () {
+    const { token, lock, tokenAddress, lockAddress, creator, withdrawer } = await deploy();
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+
+    // retractUntilUnlock = true
+    await lock.lockWithRetractPolicy(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, true);
+
+    // Before unlock, retract is allowed.
+    await expect(lock.retract(0, creator.address))
+      .to.emit(lock, "Retracted")
+      .withArgs(0, creator.address, 1000);
+
+    // New lock: once unlocked, retract must fail even if no withdrawals happened.
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+    await lock.lockWithRetractPolicy(tokenAddress, 1000, 0, 1_000_000_000_000, withdrawer.address, true);
+
+    const now = await time.latest();
+    await lock.unlock(1, now + 1);
+    await expect(lock.retract(1, creator.address))
+      .to.be.revertedWith("already unlocked");
   });
 
   it("withdraws after cliff with daily vesting", async function () {
