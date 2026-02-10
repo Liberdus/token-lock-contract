@@ -2,7 +2,8 @@ require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 const { task } = require("hardhat/config");
 
-const { AMOY_RPC_URL, PRIVATE_KEY, POLYGONSCAN_API_KEY } = process.env;
+const { AMOY_RPC_URL, POLYGON_RPC_URL, PRIVATE_KEY, POLYGONSCAN_API_KEY } =
+  process.env;
 
 task("mint-mock", "Mint MockERC20 tokens")
   .addParam("token", "MockERC20 token address")
@@ -47,8 +48,16 @@ module.exports = {
       chainId: 80002,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
     },
+    polygon: {
+      url: POLYGON_RPC_URL || "https://polygon-rpc.com",
+      chainId: 137,
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+    },
   },
   etherscan: {
-    apiKey: POLYGONSCAN_API_KEY || "",
+    apiKey: {
+      polygonAmoy: POLYGONSCAN_API_KEY || "",
+      polygon: POLYGONSCAN_API_KEY || "",
+    },
   },
 };
