@@ -5,8 +5,6 @@
  * |   LIBERDUS   |
  * +--------------+
  *
- * Official Liberdus Contract
- *
  * @title TokenLock
  * @author Liberdus
  * @notice ERC20 token locks with cliff and daily linear vesting for the Liberdus ecosystem.
