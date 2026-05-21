@@ -7,6 +7,7 @@ Simple ERC20 token lock with cliff + daily linear vesting. Intended for Polygon-
   - `1_000_000_000_000` = 100% per day
   - Example: 2 years (730 days) => `ratePerDay = 1_000_000_000_000 / 730`.
 - Vesting starts only after `unlock()` is called and the cliff period has elapsed.
+- `lock()` only supports standard ERC20 tokens with exact transfer semantics. It rejects deposits when the contract receives less or more than the requested amount, including fee-on-transfer, taxed, rebasing, or bonus-on-transfer behavior at deposit time.
 
 ## Contract Flow
 1. `lock(...)`
@@ -90,3 +91,4 @@ npx hardhat approve-mock --network amoy --token 0xYourMockToken --spender 0x324d
 ## Notes
 - This repo uses Hardhat.
 - ERC20 only (no permit, no ERC777 hooks).
+- TokenLock rejects non-exact transfers only at deposit time. If a token later pauses, blacklists, rebases, adds transfer fees, or otherwise changes behavior, withdrawals or retractions may fail or return less than expected; those later behavior changes are unsupported and may make locks unrecoverable.

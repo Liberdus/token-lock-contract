@@ -99,9 +99,14 @@ contract TokenLock {
         require(amount > 0, "amount zero");
         require(ratePerDay > 0 && ratePerDay <= RATE_SCALE, "rate invalid");
 
-        lockId = nextLockId++;
         address resolvedWithdraw = withdrawAddress == address(0) ? msg.sender : withdrawAddress;
 
+        uint256 balanceBefore = IERC20(token).balanceOf(address(this));
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+        uint256 balanceAfter = IERC20(token).balanceOf(address(this));
+        require(balanceAfter >= balanceBefore && balanceAfter - balanceBefore == amount, "token transfer mismatch");
+
+        lockId = nextLockId++;
         locks[lockId] = Lock({
             creator: msg.sender,
             token: token,
@@ -115,8 +120,6 @@ contract TokenLock {
             retractUntilUnlock: retractUntilUnlock
         });
         _addActiveLock(lockId);
-
-        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
 
         emit LockCreated(lockId, msg.sender, token, amount, cliffDays, ratePerDay, resolvedWithdraw);
     }
