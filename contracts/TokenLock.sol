@@ -1,4 +1,21 @@
 // SPDX-License-Identifier: MIT
+
+/**
+ * +--------------+
+ * |   LIBERDUS   |
+ * +--------------+
+ *
+ * Official Liberdus Contract
+ *
+ * @title TokenLock
+ * @author Liberdus
+ * @notice ERC20 token locks with cliff and daily linear vesting for the Liberdus ecosystem.
+ *
+ * Website: https://liberdus.com
+ *
+ * Official deployments and documentation should be confirmed through
+ * Liberdus communication channels.
+ */
 pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
