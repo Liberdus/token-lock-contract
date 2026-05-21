@@ -2,7 +2,13 @@ require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 const { task } = require("hardhat/config");
 
-const { AMOY_RPC_URL, PRIVATE_KEY, POLYGONSCAN_API_KEY } = process.env;
+const {
+  AMOY_RPC_URL,
+  BSC_RPC_URL,
+  BSC_TESTNET_RPC_URL,
+  PRIVATE_KEY,
+  ETHERSCAN_API_KEY,
+} = process.env;
 
 task("mint-mock", "Mint MockERC20 tokens")
   .addParam("token", "MockERC20 token address")
@@ -47,8 +53,18 @@ module.exports = {
       chainId: 80002,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
     },
+    bsc: {
+      url: BSC_RPC_URL || "https://bsc-dataseed.binance.org/",
+      chainId: 56,
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+    },
+    bscTestnet: {
+      url: BSC_TESTNET_RPC_URL || "https://data-seed-prebsc-1-s1.binance.org:8545/",
+      chainId: 97,
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+    },
   },
   etherscan: {
-    apiKey: POLYGONSCAN_API_KEY || "",
+    apiKey: ETHERSCAN_API_KEY || "",
   },
 };
