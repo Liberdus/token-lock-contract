@@ -10,6 +10,7 @@
  * @notice ERC20 token locks with cliff and daily linear vesting for the Liberdus ecosystem.
  *
  * Website: https://liberdus.com
+ * Verify deployments: https://liberdus.com/contracts
  *
  * Official deployments should be confirmed through Liberdus communication channels.
  */
