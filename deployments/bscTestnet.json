@@ -1,0 +1,37 @@
+{
+  "network": "bscTestnet",
+  "chainId": 97,
+  "contracts": {
+    "TokenLock": {
+      "contract": "TokenLock",
+      "address": "0xd77C46da1726cAEC98f10dE9f3e8fF9578608411",
+      "network": "bscTestnet",
+      "chainId": 97,
+      "deployer": "0x0C007528b70d3675C4FCaE2fc62A7F884DAE5071",
+      "transactionHash": null,
+      "blockNumber": null,
+      "deployedAt": null,
+      "constructorArgs": [],
+      "verified": true,
+      "explorerUrl": "https://testnet.bscscan.com/address/0xd77C46da1726cAEC98f10dE9f3e8fF9578608411#code",
+      "gitCommit": "0e4fe616d53de3c4fb3fa65dc6e9a096eb0035a1"
+    },
+    "MockERC20": {
+      "contract": "MockERC20",
+      "address": "0x572Dd13C043703f76B4403EC3C2754Dee96f0136",
+      "network": "bscTestnet",
+      "chainId": 97,
+      "deployer": "0x0C007528b70d3675C4FCaE2fc62A7F884DAE5071",
+      "transactionHash": null,
+      "blockNumber": null,
+      "deployedAt": null,
+      "constructorArgs": [
+        "TestToken",
+        "TEST"
+      ],
+      "verified": true,
+      "explorerUrl": "https://testnet.bscscan.com/address/0x572Dd13C043703f76B4403EC3C2754Dee96f0136#code",
+      "gitCommit": "0e4fe616d53de3c4fb3fa65dc6e9a096eb0035a1"
+    }
+  }
+}

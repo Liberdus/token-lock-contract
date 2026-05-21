@@ -81,6 +81,11 @@ npx hardhat run scripts/deploy.js --network bsc
 npx hardhat verify --network bsc <DEPLOYED_ADDRESS>
 ```
 
+## Deployment Records
+Deployments to persistent networks are recorded in `deployments/<network>.json`.
+The deploy scripts update these files with the contract address, deployer, chain ID,
+transaction hash, block number, constructor args, explorer URL, and git commit.
+
 ## Mock ERC20 (Test Token)
 Deploy a mock token to Amoy for local testing against the lock contract:
 ```bash
