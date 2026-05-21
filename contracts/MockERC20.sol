@@ -10,3 +10,37 @@ contract MockERC20 is ERC20 {
         _mint(to, amount);
     }
 }
+
+contract FeeOnTransferMockERC20 is MockERC20 {
+    uint256 private constant FEE_BPS = 1_000;
+    uint256 private constant BPS_SCALE = 10_000;
+
+    constructor(string memory name, string memory symbol) MockERC20(name, symbol) {}
+
+    function _update(address from, address to, uint256 value) internal override {
+        if (from == address(0) || to == address(0)) {
+            super._update(from, to, value);
+            return;
+        }
+
+        uint256 fee = (value * FEE_BPS) / BPS_SCALE;
+        super._update(from, to, value - fee);
+        super._update(from, address(0), fee);
+    }
+}
+
+contract BonusOnTransferMockERC20 is MockERC20 {
+    uint256 private constant BONUS_BPS = 1_000;
+    uint256 private constant BPS_SCALE = 10_000;
+
+    constructor(string memory name, string memory symbol) MockERC20(name, symbol) {}
+
+    function _update(address from, address to, uint256 value) internal override {
+        super._update(from, to, value);
+
+        if (from != address(0) && to != address(0)) {
+            uint256 bonus = (value * BONUS_BPS) / BPS_SCALE;
+            super._update(address(0), to, bonus);
+        }
+    }
+}

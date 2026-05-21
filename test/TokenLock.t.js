@@ -61,6 +61,34 @@ describe("TokenLock", function () {
       .to.be.revertedWith("rate invalid");
   });
 
+  it("rejects fee-on-transfer tokens during lock creation", async function () {
+    const { lock, lockAddress, creator } = await deploy();
+    const Token = await ethers.getContractFactory("FeeOnTransferMockERC20");
+    const token = await Token.deploy("Fee Mock", "FEE");
+    await token.waitForDeployment();
+    const tokenAddress = await token.getAddress();
+
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+
+    await expect(lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address, false))
+      .to.be.revertedWith("token transfer mismatch");
+  });
+
+  it("rejects tokens that transfer more than the requested lock amount", async function () {
+    const { lock, lockAddress, creator } = await deploy();
+    const Token = await ethers.getContractFactory("BonusOnTransferMockERC20");
+    const token = await Token.deploy("Bonus Mock", "BONUS");
+    await token.waitForDeployment();
+    const tokenAddress = await token.getAddress();
+
+    await token.mint(creator.address, 1000);
+    await token.approve(lockAddress, 1000);
+
+    await expect(lock.lock(tokenAddress, 1000, 0, 1_000_000_000_000, creator.address, false))
+      .to.be.revertedWith("token transfer mismatch");
+  });
+
   it("prevents unlock in the past and double unlock", async function () {
     const { token, lock, tokenAddress, lockAddress, creator } = await deploy();
     await token.mint(creator.address, 1000);
