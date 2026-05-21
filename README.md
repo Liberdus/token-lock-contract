@@ -1,6 +1,6 @@
 # Token Lock Contract
 
-Simple ERC20 token lock with cliff + daily linear vesting. Intended for Polygon-compatible deployment.
+Simple ERC20 token lock with cliff + daily linear vesting. Intended for EVM-compatible deployment, including Polygon Amoy and BNB Smart Chain.
 
 ## Key Concepts
 - `ratePerDay` is a **percentage-per-day** scaled by `RATE_SCALE = 1_000_000_000_000`.
@@ -48,7 +48,7 @@ npm test
 1. Copy `.env.example` to `.env` and fill in:
    - `AMOY_RPC_URL`
    - `PRIVATE_KEY`
-   - `POLYGONSCAN_API_KEY`
+   - `ETHERSCAN_API_KEY`
 2. Deploy:
 ```bash
 npx hardhat run scripts/deploy.js --network amoy
@@ -56,6 +56,28 @@ npx hardhat run scripts/deploy.js --network amoy
 3. Verify on PolygonScan (to enable the contract UI there):
 ```bash
 npx hardhat verify --network amoy <DEPLOYED_ADDRESS>
+```
+
+## Deploy to BNB Smart Chain
+1. Copy `.env.example` to `.env` and fill in:
+   - `PRIVATE_KEY`
+   - `BSC_RPC_URL` for mainnet or `BSC_TESTNET_RPC_URL` for testnet
+   - `ETHERSCAN_API_KEY`
+2. Deploy to BSC testnet:
+```bash
+npx hardhat run scripts/deploy.js --network bscTestnet
+```
+3. Verify on BscScan testnet:
+```bash
+npx hardhat verify --network bscTestnet <DEPLOYED_ADDRESS>
+```
+4. Deploy to BSC mainnet:
+```bash
+npx hardhat run scripts/deploy.js --network bsc
+```
+5. Verify on BscScan:
+```bash
+npx hardhat verify --network bsc <DEPLOYED_ADDRESS>
 ```
 
 ## Mock ERC20 (Test Token)
