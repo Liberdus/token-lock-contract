@@ -13,7 +13,7 @@
  *
  * Website: https://liberdus.com
  *
- * Official deployments and documentation should be confirmed through Liberdus communication channels.
+ * Official deployments should be confirmed through Liberdus communication channels.
  */
 pragma solidity ^0.8.20;
 
