@@ -1,0 +1,20 @@
+{
+  "network": "bsc",
+  "chainId": 56,
+  "contracts": {
+    "TokenLock": {
+      "contract": "TokenLock",
+      "address": "0xb9033f4ceB73798CA00D1cb461BD39D294B3f2F0",
+      "network": "bsc",
+      "chainId": 56,
+      "deployer": "0x0C007528b70d3675C4FCaE2fc62A7F884DAE5071",
+      "transactionHash": "0xbd2215288ffe8529a70c1da35e339c8543586cf18df8946e3eadc64f8455fd39",
+      "blockNumber": 99817280,
+      "deployedAt": "2026-05-22T18:05:12.000Z",
+      "constructorArgs": [],
+      "verified": true,
+      "explorerUrl": "https://bscscan.com/address/0xb9033f4ceB73798CA00D1cb461BD39D294B3f2F0#code",
+      "gitCommit": "f9b0e151f77510321caef4f146ff0a0580a69996"
+    }
+  }
+}
